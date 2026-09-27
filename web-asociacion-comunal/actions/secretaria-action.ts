@@ -60,15 +60,6 @@ function authHeaders(token: string) {
   }
 }
 
-async function parseError(response: Response, fallback: string) {
-  try {
-    const data = await response.json()
-    return data.mensaje || fallback
-  } catch {
-    return fallback
-  }
-}
-
 export async function listarSolicitudesAdminAction(): Promise<{
   data?: Solicitud[]
   error?: string
@@ -89,7 +80,7 @@ export async function listarSolicitudesAdminAction(): Promise<{
   }
 }
 
-export async function responderSolicitudAction(formData: FormData) {
+export async function responderSolicitudAction(formData: FormData): Promise<void> {
   const token = await getToken()
   const id = formData.get("id")?.toString()
   const estado = formData.get("estado")?.toString()
@@ -97,7 +88,7 @@ export async function responderSolicitudAction(formData: FormData) {
   const proyectoId = formData.get("proyectoId")?.toString()
 
   if (!token || !id || !estado) {
-    return { error: "Completa los campos obligatorios." }
+    return
   }
 
   try {
@@ -113,13 +104,12 @@ export async function responderSolicitudAction(formData: FormData) {
     })
 
     if (!response.ok) {
-      return { error: await parseError(response, "No se pudo responder la solicitud.") }
+      return
     }
 
     revalidatePath("/administracion/secretaria/solicitudes")
-    return { success: true }
   } catch {
-    return { error: "Error de conexion con el servidor." }
+    return
   }
 }
 
@@ -143,7 +133,7 @@ export async function listarActasAdminAction(): Promise<{
   }
 }
 
-export async function crearActaAction(formData: FormData) {
+export async function crearActaAction(formData: FormData): Promise<void> {
   const token = await getToken()
   const titulo = formData.get("titulo")?.toString()
   const contenido = formData.get("contenido")?.toString()
@@ -152,7 +142,7 @@ export async function crearActaAction(formData: FormData) {
   const acuerdoProyectoId = formData.get("acuerdoProyectoId")?.toString()
 
   if (!token || !titulo || !contenido) {
-    return { error: "Titulo y contenido son obligatorios." }
+    return
   }
 
   const acuerdos =
@@ -169,22 +159,21 @@ export async function crearActaAction(formData: FormData) {
     })
 
     if (!response.ok) {
-      return { error: await parseError(response, "No se pudo crear el acta.") }
+      return
     }
 
     revalidatePath("/administracion/secretaria/actas")
-    return { success: true }
   } catch {
-    return { error: "Error de conexion con el servidor." }
+    return
   }
 }
 
-export async function publicarActaAction(formData: FormData) {
+export async function publicarActaAction(formData: FormData): Promise<void> {
   const token = await getToken()
   const id = formData.get("id")?.toString()
 
   if (!token || !id) {
-    return { error: "Acta invalida." }
+    return
   }
 
   try {
@@ -195,14 +184,13 @@ export async function publicarActaAction(formData: FormData) {
     })
 
     if (!response.ok) {
-      return { error: await parseError(response, "No se pudo publicar el acta.") }
+      return
     }
 
     revalidatePath("/administracion/secretaria/actas")
     revalidatePath("/comunidad/secretaria/actas")
-    return { success: true }
   } catch {
-    return { error: "Error de conexion con el servidor." }
+    return
   }
 }
 
@@ -225,13 +213,13 @@ export async function listarComunicadosAdminAction(): Promise<{
   }
 }
 
-export async function crearComunicadoAction(formData: FormData) {
+export async function crearComunicadoAction(formData: FormData): Promise<void> {
   const token = await getToken()
   const titulo = formData.get("titulo")?.toString()
   const contenido = formData.get("contenido")?.toString()
 
   if (!token || !titulo || !contenido) {
-    return { error: "Titulo y contenido son obligatorios." }
+    return
   }
 
   try {
@@ -243,14 +231,13 @@ export async function crearComunicadoAction(formData: FormData) {
     })
 
     if (!response.ok) {
-      return { error: await parseError(response, "No se pudo crear el comunicado.") }
+      return
     }
 
     revalidatePath("/administracion/secretaria/comunicados")
     revalidatePath("/comunidad/secretaria/comunicados")
-    return { success: true }
   } catch {
-    return { error: "Error de conexion con el servidor." }
+    return
   }
 }
 
@@ -274,13 +261,13 @@ export async function listarMisSolicitudesAction(): Promise<{
   }
 }
 
-export async function crearSolicitudVecinoAction(formData: FormData) {
+export async function crearSolicitudVecinoAction(formData: FormData): Promise<void> {
   const token = await getToken()
   const titulo = formData.get("titulo")?.toString()
   const descripcion = formData.get("descripcion")?.toString()
 
   if (!token || !titulo || !descripcion) {
-    return { error: "Completa titulo y descripcion." }
+    return
   }
 
   try {
@@ -292,13 +279,12 @@ export async function crearSolicitudVecinoAction(formData: FormData) {
     })
 
     if (!response.ok) {
-      return { error: await parseError(response, "No se pudo crear la solicitud.") }
+      return
     }
 
     revalidatePath("/comunidad/secretaria/solicitudes")
-    return { success: true }
   } catch {
-    return { error: "Error de conexion con el servidor." }
+    return
   }
 }
 
