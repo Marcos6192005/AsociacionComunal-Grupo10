@@ -1,8 +1,10 @@
 package com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.impl;
 
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.SemillaComunidad;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.interfaces.ProyectoDAO;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.entities.Proyecto;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.utils.ArchivoDatUtil;
+import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -12,6 +14,13 @@ import java.util.Optional;
 public class ProyectoDAODatImpl implements ProyectoDAO {
 
     private static final String PROYECTOS = "proyectos.dat";
+
+    @PostConstruct
+    public void poblarSiVacio() {
+        if (listarProyectos().isEmpty()) {
+            ArchivoDatUtil.guardarDatos(PROYECTOS, SemillaComunidad.proyectos());
+        }
+    }
 
     @Override
     public Proyecto guardarProyecto(Proyecto proyecto) {

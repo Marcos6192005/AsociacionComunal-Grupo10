@@ -24,7 +24,10 @@ public class ArchivoDatUtil {
         }
 
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(rutaArchivo))) {
-            lista = (List<T>) ois.readObject();
+            List<T> leida = (List<T>) ois.readObject();
+            if (leida != null) {
+                lista = new ArrayList<>(leida);
+            }
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Error al leer el archivo " + rutaArchivo + ": " + e.getMessage());
         }
