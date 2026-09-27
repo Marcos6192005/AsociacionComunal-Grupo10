@@ -53,15 +53,6 @@ function authHeaders(token: string) {
   }
 }
 
-async function parseError(response: Response, fallback: string) {
-  try {
-    const data = await response.json()
-    return data.mensaje || fallback
-  } catch {
-    return fallback
-  }
-}
-
 export async function listarMovimientosAction(): Promise<{
   data?: Movimiento[]
   error?: string
@@ -82,7 +73,7 @@ export async function listarMovimientosAction(): Promise<{
   }
 }
 
-export async function registrarMovimientoAction(formData: FormData) {
+export async function registrarMovimientoAction(formData: FormData): Promise<void> {
   const token = await getToken()
   const tipo = formData.get("tipo")?.toString()
   const concepto = formData.get("concepto")?.toString()
@@ -91,7 +82,7 @@ export async function registrarMovimientoAction(formData: FormData) {
   const proyectoId = formData.get("proyectoId")?.toString()
 
   if (!token || !tipo || !concepto || !monto) {
-    return { error: "Completa tipo, concepto y monto." }
+    return
   }
 
   try {
@@ -109,15 +100,14 @@ export async function registrarMovimientoAction(formData: FormData) {
     })
 
     if (!response.ok) {
-      return { error: await parseError(response, "No se pudo registrar el movimiento.") }
+      return
     }
 
     revalidatePath("/administracion/tesoreria/gastos")
     revalidatePath("/administracion/tesoreria/balance")
     revalidatePath("/comunidad/tesoreria")
-    return { success: true }
   } catch {
-    return { error: "Error de conexion con el servidor." }
+    return
   }
 }
 
@@ -160,14 +150,14 @@ export async function listarCuotasAdminAction(): Promise<{
   }
 }
 
-export async function crearCuotaAction(formData: FormData) {
+export async function crearCuotaAction(formData: FormData): Promise<void> {
   const token = await getToken()
   const correoVecino = formData.get("correoVecino")?.toString()
   const periodo = formData.get("periodo")?.toString()
   const monto = Number(formData.get("monto"))
 
   if (!token || !correoVecino || !periodo || !monto) {
-    return { error: "Completa correo, periodo y monto." }
+    return
   }
 
   try {
@@ -179,22 +169,21 @@ export async function crearCuotaAction(formData: FormData) {
     })
 
     if (!response.ok) {
-      return { error: await parseError(response, "No se pudo crear la cuota.") }
+      return
     }
 
     revalidatePath("/administracion/tesoreria/contribuciones")
-    return { success: true }
   } catch {
-    return { error: "Error de conexion con el servidor." }
+    return
   }
 }
 
-export async function marcarCuotaPagadaAction(formData: FormData) {
+export async function marcarCuotaPagadaAction(formData: FormData): Promise<void> {
   const token = await getToken()
   const id = formData.get("id")?.toString()
 
   if (!token || !id) {
-    return { error: "Cuota invalida." }
+    return
   }
 
   try {
@@ -205,16 +194,15 @@ export async function marcarCuotaPagadaAction(formData: FormData) {
     })
 
     if (!response.ok) {
-      return { error: await parseError(response, "No se pudo marcar el pago.") }
+      return
     }
 
     revalidatePath("/administracion/tesoreria/contribuciones")
     revalidatePath("/administracion/tesoreria/balance")
     revalidatePath("/administracion/tesoreria/gastos")
     revalidatePath("/comunidad/tesoreria")
-    return { success: true }
   } catch {
-    return { error: "Error de conexion con el servidor." }
+    return
   }
 }
 

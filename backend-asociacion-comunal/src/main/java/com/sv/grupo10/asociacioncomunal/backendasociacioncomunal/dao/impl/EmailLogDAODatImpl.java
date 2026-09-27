@@ -1,5 +1,6 @@
 package com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.impl;
 
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.SemillaComunidad;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.interfaces.EmailLogDAO;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.entities.RegistroEmail;
 import jakarta.annotation.PostConstruct;
@@ -47,6 +48,11 @@ public class EmailLogDAODatImpl implements EmailLogDAO {
             log.info("Bitácora de correos cargada: {} registros", registros.size());
         } catch (IOException | ClassNotFoundException e) {
             log.warn("No se pudo leer {}: {}", archivo, e.getMessage());
+        }
+        if (registros.isEmpty()) {
+            SemillaComunidad.correos().forEach(registro -> registros.put(registro.getId(), registro));
+            persistir();
+            log.info("Bitacora de correos sembrada: {} registros", registros.size());
         }
     }
 

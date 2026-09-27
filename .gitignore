@@ -45,3 +45,6 @@ Thumbs.db
 /backend-asociacion-comunal/.nb-gradle/
 /backend-asociacion-comunal/*.dat
 /usuarios.dat
+
+*.pdf
+*.docx

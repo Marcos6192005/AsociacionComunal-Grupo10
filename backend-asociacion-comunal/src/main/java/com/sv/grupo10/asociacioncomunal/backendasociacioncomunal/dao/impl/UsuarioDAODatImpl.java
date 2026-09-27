@@ -1,5 +1,6 @@
 package com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.impl;
 
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.SemillaComunidad;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.interfaces.UsuarioDAO;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.entities.MiembroDirectiva;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.entities.Usuario;
@@ -81,7 +82,7 @@ public class UsuarioDAODatImpl implements UsuarioDAO {
         List<Usuario> usuarios = ArchivoDatUtil.leerDatos(USUARIOS);
 
         if (usuarios.isEmpty()) {
-            System.out.println("No se encontraron usuarios. Creando roles base de la asociacion...");
+            System.out.println("usuarios.dat vacio. Sembrando Residencial Los Maquilishuats, San Salvador...");
             sembrarUsuariosBase();
             return;
         }
@@ -90,40 +91,9 @@ public class UsuarioDAODatImpl implements UsuarioDAO {
     }
 
     private void sembrarUsuariosBase() {
-        guardarUsuario(new MiembroDirectiva(
-                "Presidente ADESCO",
-                "presidente@adesco.com",
-                "presi123",
-                "Presidente"
-        ));
-        guardarUsuario(new MiembroDirectiva(
-                "Secretario ADESCO",
-                "secretario@adesco.com",
-                "secre123",
-                "Secretario"
-        ));
-        guardarUsuario(new MiembroDirectiva(
-                "Tesorero ADESCO",
-                "tesorero@adesco.com",
-                "teso123",
-                "Tesorero"
-        ));
-        // Kept for backward compatibility with demos that still use admin@adesco.com
-        guardarUsuario(new MiembroDirectiva(
-                "Admin ADESCO",
-                "admin@adesco.com",
-                "admin123",
-                "Presidente"
-        ));
-        guardarUsuario(new Vecino(
-                "Vecino 1",
-                "vecino@adesco.com",
-                "vecino123",
-                "Casa 42, Senda B"
-        ));
-
-        System.out.println("Roles base creados: PRESIDENTE, SECRETARIO, TESORERO, VECINO");
-        System.out.println("Admin demos: admin@adesco.com / admin123 (rol PRESIDENTE)");
+        ArchivoDatUtil.guardarDatos(USUARIOS, SemillaComunidad.usuarios());
+        System.out.println("Comunidad sembrada: junta y 18 vecinos de Residencial Los Maquilishuats.");
+        System.out.println("Accesos: admin@adesco.com / admin123, presidente@adesco.com / presi123, vecino@adesco.com / vecino123");
     }
 
     private void asegurarUsuariosBase(List<Usuario> usuarios) {

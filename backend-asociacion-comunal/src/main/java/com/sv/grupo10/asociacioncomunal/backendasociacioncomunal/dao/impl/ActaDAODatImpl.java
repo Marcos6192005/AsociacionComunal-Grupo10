@@ -1,8 +1,10 @@
 package com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.impl;
 
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.SemillaComunidad;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.interfaces.ActaDAO;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.entities.Acta;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.utils.ArchivoDatUtil;
+import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -12,6 +14,13 @@ import java.util.Optional;
 public class ActaDAODatImpl implements ActaDAO {
 
     private static final String ARCHIVO = "actas.dat";
+
+    @PostConstruct
+    public void poblarSiVacio() {
+        if (listar().isEmpty()) {
+            ArchivoDatUtil.guardarDatos(ARCHIVO, SemillaComunidad.actas());
+        }
+    }
 
     @Override
     public Acta guardar(Acta acta) {
