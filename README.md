@@ -1,74 +1,117 @@
 # Asociación Comunal - Grupo 10
 
-Repositorio para el desarrollo del proyecto universitario de la Asociación Comunal, estructurado como un monorepo que integra un frontend en Next.js y un backend en Spring Boot.
+Monorepo del proyecto universitario de la ADESCO Residencial Los Maquilishuats (San Salvador). El frontend es Next.js y el backend es una API REST en Spring Boot.
 
-### Estructura del Repositorio
-```bash
-web-asociacion-comunal/ - Aplicación frontend desarrollada con Next.js y shadcn/ui.
+Los usuarios se guardan en PostgreSQL con JDBC y un pool Tomcat. El resto de módulos (proyectos, secretaría, tesorería y la bitácora de correos) sigue en archivos `.dat` mientras se migran.
+
+## Estructura
+
+```text
+web-asociacion-comunal/       Frontend Next.js y shadcn/ui. Corre en el puerto 3000.
+backend-asociacion-comunal/   API Spring Boot, Spring Security y JDBC. Corre en el puerto 8081.
+docker-compose.yml            PostgreSQL 16 y pgAdmin.
 ```
 
-```bash
-backend-asociacion-comunal/ - API REST desarrollada con Spring Boot, Spring Data JPA y Spring Security.
-```
+## Requisitos
 
-Guía de Instalación y Ejecución
+- Docker Desktop
+- Java 21
+- Node.js (o bun) para el frontend
 
-1. Clonar el Repositorio
+El puerto publicado de Postgres es **5433**, no 5432. Así no choca con un Postgres instalado en la máquina.
 
-- Clona el proyecto en tu máquina local asegurándote de mantener la estructura del monorepo:
+## 1. Clonar
 
 ```bash
 git clone https://github.com/Marcos6192005/AsociacionComunal-Grupo10-priv.git
 cd AsociacionComunal-Grupo10-priv
 ```
 
-2. Configurar y Ejecutar el Frontend (Next.js)
-- Entra a la carpeta del frontend:
+## 2. Base de datos
+
+Desde la raíz del repo:
 
 ```bash
-cd web-asociacion-comunal
+docker compose up -d
 ```
-- Instala las dependencias(bun, pnpm, npm):
 
-```bash
-npm install
+Eso levanta dos contenedores:
+
+| Servicio | URL | Para qué |
+|---|---|---|
+| Postgres | `localhost:5433` | Base `asociacion_comunal` |
+| pgAdmin | http://localhost:5050 | Ver las tablas en el navegador |
+
+En un volumen nuevo, Docker ejecuta `backend-asociacion-comunal/src/main/resources/schema.sql` al crear la base. Si el volumen ya existía y faltan las tablas, aplicalo a mano:
+
+```powershell
+Get-Content -Raw .\backend-asociacion-comunal\src\main\resources\schema.sql | docker compose exec -T db psql -U admin_asociacion_comunal -d asociacion_comunal
 ```
-- Inicia el servidor de desarrollo:
 
-```bash
-npm run dev
-```
-- La aplicación web estará disponible por defecto en http://localhost:3000.
+Credenciales de Postgres (las mismas en `docker-compose.yml` y en `application.properties`):
 
-3. Configurar y Ejecutar el Backend (Spring Boot)
-- Abre una nueva terminal y navega a la carpeta del backend desde la raíz:
+| Campo | Valor |
+|---|---|
+| Base | `asociacion_comunal` |
+| Usuario | `admin_asociacion_comunal` |
+| Contraseña | `asociacioncomunal_2K26Proyecto` |
+
+pgAdmin pide otro login, el de la página: `admin@asociacion-comunal.com` / `asociacioncomunal_2K26Proyecto`.
+
+Para registrar el servidor dentro de pgAdmin, el host es `db` y el puerto es `5432`. Ese puerto es el de adentro de la red de Docker. Desde Windows la base se alcanza por `localhost:5433`.
+
+## 3. Backend
+
+Con los contenedores arriba, en otra terminal:
 
 ```bash
 cd backend-asociacion-comunal
 ```
-- Abre IntellJ IDEA y en el panel de Gradle haz click en sincronizar, esto es para que el proyecto tenga las dependencias necesarias para correr.
-- Cuando tengas el servidor corriendo este estará disponible en http://localhost:8081
-- Para ingresar, por defecto el username es "user" y la password la podras ver en el servidor cuando tengas corriendo el servidor.
 
-Para terminal u otros IDEs, ejecuta el proyecto utilizando el Gradle Wrapper incluido:
+Windows:
 
-- En Windows (CMD / PowerShell):
-
-```Bash
+```bash
 .\gradlew bootRun
 ```
 
-- En Linux / macOS:
+Linux y macOS:
 
-```Bash
+```bash
 ./gradlew bootRun
 ```
-El servidor backend se iniciará localmente (configurado típicamente en el puerto 8081 para evitar conflictos locales).
 
+La API queda en http://localhost:8081. Swagger queda en http://localhost:8081/swagger-ui.html.
 
-## Componentes y Documentación de Referencia
-- **Frontend**: Utiliza componentes de shadcn/ui.
-  
-- **Backend**: Construido sobre Spring Boot, incluye soporte para Spring Data JPA, Spring Security y documentación interactiva mediante SpringDoc OpenAPI. Para consultas avanzadas sobre dependencias de Gradle o integración con bases de datos, consulta la documentación oficial de Spring Boot.
+La primera vez que la tabla `usuario` está vacía, el backend siembra la junta y los vecinos. Las contraseñas se guardan con BCrypt. En la pantalla de login se escribe la clave en texto plano.
 
-<img width="860" height="307" alt="image" src="https://github.com/user-attachments/assets/81b91114-52b8-41e6-879e-445d3ca4817b" />
+## 4. Frontend
+
+En otra terminal, desde `web-asociacion-comunal`:
+
+```bash
+npm install
+npm run dev
+```
+
+La aplicación queda en http://localhost:3000.
+
+## 5. Pruebas
+
+Desde `backend-asociacion-comunal`, con Postgres arriba (`contextLoads` levanta la aplicación completa):
+
+```bash
+.\gradlew test
+```
+
+El reporte queda en `backend-asociacion-comunal/build/reports/tests/test/index.html`.
+
+## Cuentas de prueba
+
+| Rol | Correo | Contraseña |
+|---|---|---|
+| Presidente | `presidente@adesco.com` | `presi123` |
+| Secretario | `secretario@adesco.com` | `secre123` |
+| Tesorero | `tesorero@adesco.com` | `teso123` |
+| Vecino | `vecino@adesco.com` | `vecino123` |
+
+El resto de vecinos usa `vecino123`.
