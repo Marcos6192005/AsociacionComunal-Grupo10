@@ -5,10 +5,12 @@ import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.interfaces.
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.entities.Proyecto;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.utils.ArchivoDatUtil;
 import jakarta.annotation.PostConstruct;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public class ProyectoDAODatImpl implements ProyectoDAO {
 
     private static final String PROYECTOS = "proyectos.dat";
