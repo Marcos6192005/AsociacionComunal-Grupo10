@@ -71,7 +71,6 @@ public final class SemillaComunidad {
         usuarios.add(new MiembroDirectiva(PRESIDENTE_NOMBRE, PRESIDENTE_CORREO, "presi123", "Presidente"));
         usuarios.add(new MiembroDirectiva(SECRETARIO_NOMBRE, SECRETARIO_CORREO, "secre123", "Secretario"));
         usuarios.add(new MiembroDirectiva(TESORERO_NOMBRE, TESORERO_CORREO, "teso123", "Tesorero"));
-        usuarios.add(new MiembroDirectiva("Admin ADESCO", "admin@adesco.com", "admin123", "Presidente"));
         for (VecinoBase vecino : VECINOS) {
             usuarios.add(new Vecino(vecino.nombre, vecino.correo, CLAVE_VECINO, vecino.casa));
         }
