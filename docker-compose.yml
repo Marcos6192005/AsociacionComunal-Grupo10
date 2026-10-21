@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:16
+    container_name: asociacion-comunal-db-postgres
+    environment:
+      POSTGRES_DB: asociacion_comunal
+      POSTGRES_USER: admin_asociacion_comunal
+      POSTGRES_PASSWORD: asociacioncomunal_2K26Proyecto
+    ports:
+      - 5433:5432
+    volumes:
+      - asociacion-comunal-db-postgres-data:/var/lib/postgresql/data
+      - ./backend-asociacion-comunal/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin_asociacion_comunal -d asociacion_comunal"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: asociacion-comunal-pgadmin
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@asociacion-comunal.com
+      PGADMIN_DEFAULT_PASSWORD: asociacioncomunal_2K26Proyecto
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    ports:
+      - 5050:80
+    volumes:
+      - asociacion-comunal-pgadmin-data:/var/lib/pgadmin
+
+volumes:
+  asociacion-comunal-db-postgres-data:
+  asociacion-comunal-pgadmin-data:
