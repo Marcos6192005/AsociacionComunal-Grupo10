@@ -7,12 +7,10 @@ import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.entities
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.entities.Vecino;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.utils.ArchivoDatUtil;
 import jakarta.annotation.PostConstruct;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
-@Repository
 public class UsuarioDAODatImpl implements UsuarioDAO {
 
     private static final String USUARIOS = "usuarios.dat";

@@ -6,6 +6,8 @@ import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.plantill
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.services.NotificacionCorreo;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.services.UsuarioService;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -16,17 +18,19 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     private final UsuarioDAO usuarioDAO;
     private final NotificacionCorreo notificacionCorreo;
+    private final PasswordEncoder passwordEncoder;
 
-    public UsuarioServiceImpl(UsuarioDAO usuarioDAO, NotificacionCorreo notificacionCorreo) {
+    public UsuarioServiceImpl(UsuarioDAO usuarioDAO, NotificacionCorreo notificacionCorreo, PasswordEncoder passwordEncoder) {
         this.usuarioDAO = usuarioDAO;
         this.notificacionCorreo = notificacionCorreo;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public Optional<Usuario> autenticar(String correo, String password) {
         Optional<Usuario> usuarioOpt = usuarioDAO.buscarPorCorreo(correo);
 
-        if (usuarioOpt.isPresent() && usuarioOpt.get().getPassword().equals(password)) {
+        if (usuarioOpt.isPresent() && passwordEncoder.matches(password, usuarioOpt.get().getPassword())) {
             return usuarioOpt;
         }
 
@@ -44,6 +48,7 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new IllegalArgumentException("Ya existe un usuario con ese correo");
         }
 
+        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
         usuarioDAO.guardarUsuario(usuario);
         notificacionCorreo.avisar(new EmailBienvenida(usuario.getCorreo(), usuario.getNombre()));
         return usuario;
@@ -61,6 +66,11 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public Usuario actualizarUsuario(Usuario usuario) {
+        
+        if (usuario.getPassword() == null || !usuario.getPassword().startsWith("$2")) {
+            usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        }
+
         boolean actualizado = usuarioDAO.actualizarUsuario(usuario);
 
         if (!actualizado) {
