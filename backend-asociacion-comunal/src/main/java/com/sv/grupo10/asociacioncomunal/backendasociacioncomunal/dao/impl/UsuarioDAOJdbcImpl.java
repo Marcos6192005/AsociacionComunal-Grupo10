@@ -7,6 +7,7 @@ import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.entities
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.entities.Vecino;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Repository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -24,9 +25,11 @@ public class UsuarioDAOJdbcImpl implements UsuarioDAO {
     private static final String COLUMNAS = "id, nombre, correo, password, tipo, numero_casa, cargo";
 
     private final DataSource dataSource;
+    private final PasswordEncoder passwordEncoder;
 
-    public UsuarioDAOJdbcImpl(DataSource dataSource) {
+    public UsuarioDAOJdbcImpl(DataSource dataSource, PasswordEncoder passwordEncoder) {
         this.dataSource = dataSource;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -126,6 +129,7 @@ public class UsuarioDAOJdbcImpl implements UsuarioDAO {
             return;
         }
         for (Usuario usuario : SemillaComunidad.usuarios()) {
+            usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
             guardarUsuario(usuario);
         }
         System.out.println("Usuarios sembrados en PostgreSQL");
