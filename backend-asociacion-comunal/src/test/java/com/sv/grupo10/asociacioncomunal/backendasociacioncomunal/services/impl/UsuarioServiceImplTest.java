@@ -1,6 +1,7 @@
 package com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.services.impl;
 
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.interfaces.UsuarioDAO;
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.entities.MiembroDirectiva;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.entities.Usuario;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.entities.Vecino;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.plantillas.EmailBienvenida;
@@ -14,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -111,6 +113,68 @@ class UsuarioServiceImplTest {
         when(usuarioDAO.eliminarUsuario("id-que-no-esta")).thenReturn(false);
 
         assertThrows(NoSuchElementException.class, () -> service.eliminarUsuario("id-que-no-esta"));
+    }
+
+    @Test
+    void crearUsuarioRechazaUnSegundoPresidente() {
+        MiembroDirectiva presidenteActual = presidente("Marta", "marta@adesco.com");
+        MiembroDirectiva nuevo = new MiembroDirectiva("Luis", "luis@adesco.com", "presi123", "Presidente");
+        when(usuarioDAO.buscarPorCorreo(nuevo.getCorreo())).thenReturn(Optional.empty());
+        when(usuarioDAO.listarUsuarios()).thenReturn(List.of(presidenteActual));
+
+        assertThrows(IllegalArgumentException.class, () -> service.crearUsuario(nuevo));
+
+        verify(usuarioDAO, never()).guardarUsuario(any());
+        verify(notificacionCorreo, never()).avisar(any());
+    }
+
+    @Test
+    void crearUsuarioPermiteElPrimerPresidente() {
+        MiembroDirectiva nuevo = new MiembroDirectiva("Luis", "luis@adesco.com", "presi123", "Presidente");
+        when(usuarioDAO.buscarPorCorreo(nuevo.getCorreo())).thenReturn(Optional.empty());
+        when(usuarioDAO.listarUsuarios()).thenReturn(List.of(vecinoConClave("vecino123")));
+
+        service.crearUsuario(nuevo);
+
+        verify(usuarioDAO).guardarUsuario(nuevo);
+    }
+
+    @Test
+    void crearUsuarioNoRevisaPresidentesSiNoEsPresidente() {
+        MiembroDirectiva secretario = new MiembroDirectiva("Ana", "ana@adesco.com", "secre123", "Secretario");
+        when(usuarioDAO.buscarPorCorreo(secretario.getCorreo())).thenReturn(Optional.empty());
+
+        service.crearUsuario(secretario);
+
+        verify(usuarioDAO, never()).listarUsuarios();
+        verify(usuarioDAO).guardarUsuario(secretario);
+    }
+
+    @Test
+    void actualizarUsuarioRechazaConvertirAOtroEnPresidente() {
+        MiembroDirectiva presidenteActual = presidente("Marta", "marta@adesco.com");
+        MiembroDirectiva aspirante = new MiembroDirectiva(
+                "Ana", "ana@adesco.com", passwordEncoder.encode("secre123"), "Presidente");
+        when(usuarioDAO.listarUsuarios()).thenReturn(List.of(presidenteActual, aspirante));
+
+        assertThrows(IllegalArgumentException.class, () -> service.actualizarUsuario(aspirante));
+
+        verify(usuarioDAO, never()).actualizarUsuario(any());
+    }
+
+    @Test
+    void actualizarUsuarioPermiteEditarAlPresidenteActual() {
+        MiembroDirectiva presidenteActual = presidente("Marta", "marta@adesco.com");
+        when(usuarioDAO.listarUsuarios()).thenReturn(List.of(presidenteActual));
+        when(usuarioDAO.actualizarUsuario(presidenteActual)).thenReturn(true);
+
+        Usuario resultado = service.actualizarUsuario(presidenteActual);
+
+        assertEquals(presidenteActual.getId(), resultado.getId());
+    }
+
+    private MiembroDirectiva presidente(String nombre, String correo) {
+        return new MiembroDirectiva(nombre, correo, passwordEncoder.encode("presi123"), "Presidente");
     }
 
     private Vecino vecinoConClave(String clavePlana) {

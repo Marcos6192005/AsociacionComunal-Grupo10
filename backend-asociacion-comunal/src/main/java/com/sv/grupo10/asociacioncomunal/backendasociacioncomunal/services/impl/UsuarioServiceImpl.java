@@ -3,6 +3,7 @@ package com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.services.impl;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.interfaces.UsuarioDAO;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.entities.Usuario;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.plantillas.EmailBienvenida;
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.security.Roles;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.services.NotificacionCorreo;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.services.UsuarioService;
 import org.springframework.stereotype.Service;
@@ -48,6 +49,8 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new IllegalArgumentException("Ya existe un usuario con ese correo");
         }
 
+        validarUnicoPresidente(usuario);
+
         usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
         usuarioDAO.guardarUsuario(usuario);
         notificacionCorreo.avisar(new EmailBienvenida(usuario.getCorreo(), usuario.getNombre()));
@@ -66,7 +69,8 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public Usuario actualizarUsuario(Usuario usuario) {
-        
+        validarUnicoPresidente(usuario);
+
         if (usuario.getPassword() == null || !usuario.getPassword().startsWith("$2")) {
             usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
         }
@@ -86,6 +90,20 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         if (!eliminado) {
             throw new NoSuchElementException("No existe un usuario con id " + id);
+        }
+    }
+
+    private void validarUnicoPresidente(Usuario usuario) {
+        if (!Roles.PRESIDENTE.equals(usuario.getRol())) {
+            return;
+        }
+
+        boolean yaHayOtro = usuarioDAO.listarUsuarios().stream()
+                .anyMatch(u -> Roles.PRESIDENTE.equals(u.getRol())
+                        && !u.getId().equals(usuario.getId()));
+
+        if (yaHayOtro) {
+            throw new IllegalArgumentException("Ya existe un presidente registrado");
         }
     }
 }
