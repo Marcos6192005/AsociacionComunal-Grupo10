@@ -5,11 +5,15 @@ import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.interfaces.
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.entities.Comentario;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.utils.ArchivoDatUtil;
 import jakarta.annotation.PostConstruct;
+import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.List;
 
 @Repository
+@Qualifier("dat")
 public class ComentarioDAODatImpl implements ComentarioDAO {
 
     private static final String COMENTARIOS = "comentarios.dat";
