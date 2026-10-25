@@ -1,7 +1,10 @@
 package com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.services.impl;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.AccesoDenegadoException;
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.PersistenciaException;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.RecursoNoEncontradoException;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.ReglaNegocioException;
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.dtos.GenerarCuotasRequestDTO;
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.dtos.GenerarCuotasResultado;
 
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.interfaces.CuotaDAO;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.interfaces.MovimientoDAO;
@@ -21,9 +24,17 @@ import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.services.Usuari
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.security.Roles;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class TesoreriaServiceImpl implements TesoreriaService {
@@ -180,6 +191,104 @@ public class TesoreriaServiceImpl implements TesoreriaService {
                 guardada.getNombreVecino()
         ));
         return guardada;
+    }
+
+    @Override
+    public GenerarCuotasResultado generarCuotasDelMes(String correoAdmin, GenerarCuotasRequestDTO request) {
+        exigirEscrituraTesoreria(correoAdmin);
+        if (request.periodo() == null || request.periodo().isBlank()) {
+            throw new ReglaNegocioException("El periodo es obligatorio (YYYY-MM)");
+        }
+        if (request.monto() == null || request.monto() <= 0) {
+            throw new ReglaNegocioException("El monto debe ser mayor a cero");
+        }
+
+        String periodo = request.periodo().trim();
+        List<Vecino> vecinos = usuarioService.listarUsuarios().stream()
+                .filter(Vecino.class::isInstance)
+                .map(Vecino.class::cast)
+                .toList();
+
+        AtomicInteger creadas = new AtomicInteger();
+        AtomicInteger existentes = new AtomicInteger();
+        AtomicInteger fallidas = new AtomicInteger();
+        int hilos = Math.max(1, Math.min(4, vecinos.size()));
+        ExecutorService executor = Executors.newFixedThreadPool(hilos);
+        try {
+            List<Future<?>> tareas = new ArrayList<>();
+            for (Vecino vecino : vecinos) {
+                tareas.add(executor.submit(() ->
+                        insertarCuotaDelMes(vecino, periodo, request.monto(), creadas, existentes, fallidas)));
+            }
+            for (Future<?> tarea : tareas) {
+                tarea.get();
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new PersistenciaException("Se interrumpio la generacion de cuotas", e);
+        } catch (ExecutionException e) {
+            throw new PersistenciaException("Fallo una tarea de generacion de cuotas", e.getCause());
+        } finally {
+            executor.shutdown();
+            try {
+                if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
+                    executor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                executor.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+        }
+        return new GenerarCuotasResultado(creadas.get(), existentes.get(), fallidas.get());
+    }
+
+    /**
+     * Each call to {@code cuotaDAO.guardar} borrows its own pooled connection.
+     * A connection is never shared between these threads.
+     */
+    private void insertarCuotaDelMes(
+            Vecino vecino,
+            String periodo,
+            double monto,
+            AtomicInteger creadas,
+            AtomicInteger existentes,
+            AtomicInteger fallidas
+    ) {
+        Cuota cuota = new Cuota(
+                vecino.getCorreo(),
+                vecino.getNombre(),
+                vecino.getNumeroCasa(),
+                periodo,
+                monto,
+                PENDIENTE
+        );
+        try {
+            Cuota guardada = cuotaDAO.guardar(cuota);
+            creadas.incrementAndGet();
+            notificacionCorreo.avisar(new EmailCuotaPendiente(
+                    guardada.getCorreoVecino(),
+                    guardada.getPeriodo(),
+                    guardada.getMonto(),
+                    guardada.getNombreVecino()
+            ));
+        } catch (PersistenciaException ex) {
+            if (esClaveDuplicada(ex)) {
+                existentes.incrementAndGet();
+                return;
+            }
+            fallidas.incrementAndGet();
+        }
+    }
+
+    private boolean esClaveDuplicada(Throwable error) {
+        Throwable actual = error;
+        while (actual != null) {
+            if (actual instanceof SQLException sql && "23505".equals(sql.getSQLState())) {
+                return true;
+            }
+            actual = actual.getCause();
+        }
+        return false;
     }
 
     @Override

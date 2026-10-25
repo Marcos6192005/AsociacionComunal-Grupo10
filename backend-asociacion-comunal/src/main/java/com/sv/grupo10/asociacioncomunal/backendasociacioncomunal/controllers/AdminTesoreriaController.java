@@ -2,6 +2,8 @@ package com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.controllers;
 
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.dtos.BalanceDTO;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.dtos.CuotaRequestDTO;
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.dtos.GenerarCuotasRequestDTO;
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.dtos.GenerarCuotasResultado;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.dtos.MovimientoRequestDTO;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.entities.Cuota;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.entities.Movimiento;
@@ -51,6 +53,14 @@ public class AdminTesoreriaController {
     @GetMapping("/cuotas")
     public ResponseEntity<List<Cuota>> listarCuotas(Authentication authentication) {
         return ResponseEntity.ok(tesoreriaService.listarCuotas(authentication.getName()));
+    }
+
+    @PostMapping("/cuotas/generar")
+    public ResponseEntity<GenerarCuotasResultado> generarCuotas(
+            @RequestBody GenerarCuotasRequestDTO request,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(tesoreriaService.generarCuotasDelMes(authentication.getName(), request));
     }
 
     @PostMapping("/cuotas")
