@@ -4,6 +4,7 @@ import {
     listarActasAdminAction,
     publicarActaAction,
 } from "@/actions/secretaria-action"
+import { ActionForm } from "@/components/forms/action-form"
 import { PageHeader } from "@/components/dashboard/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -33,7 +34,7 @@ export default async function Page() {
                         <CardTitle>Nueva acta (borrador)</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <form action={crearActaAction} className="grid gap-3">
+                        <ActionForm action={crearActaAction} className="grid gap-3">
                             <Field>
                                 <FieldLabel htmlFor="titulo">Titulo</FieldLabel>
                                 <Input id="titulo" name="titulo" required />
@@ -55,7 +56,7 @@ export default async function Page() {
                                 <Input id="acuerdoProyectoId" name="acuerdoProyectoId" />
                             </Field>
                             <Button type="submit">Guardar borrador</Button>
-                        </form>
+                        </ActionForm>
                     </CardContent>
                 </Card>
             ) : (
@@ -89,12 +90,15 @@ export default async function Page() {
                                     </ul>
                                 )}
                                 {puedeEscribir && acta.estado === "BORRADOR" && (
-                                    <form action={publicarActaAction}>
+                                    <ActionForm
+                                        action={publicarActaAction}
+                                        confirmMessage="Publicar esta acta? Los vecinos van a poder verla."
+                                    >
                                         <input type="hidden" name="id" value={acta.id} />
                                         <Button type="submit" variant="outline" size="sm">
                                             Publicar acta
                                         </Button>
-                                    </form>
+                                    </ActionForm>
                                 )}
                             </CardContent>
                         </Card>

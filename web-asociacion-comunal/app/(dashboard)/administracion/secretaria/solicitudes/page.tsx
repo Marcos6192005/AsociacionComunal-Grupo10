@@ -3,6 +3,7 @@ import {
     listarSolicitudesAdminAction,
     responderSolicitudAction,
 } from "@/actions/secretaria-action"
+import { ActionForm } from "@/components/forms/action-form"
 import { PageHeader } from "@/components/dashboard/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -55,7 +56,7 @@ export default async function Page() {
                                     </p>
                                 )}
                                 {puedeEscribir && (
-                                    <form action={responderSolicitudAction} className="grid gap-2 border-t pt-3">
+                                    <ActionForm action={responderSolicitudAction} className="grid gap-2 border-t pt-3">
                                         <input type="hidden" name="id" value={solicitud.id} />
                                         <Field>
                                             <FieldLabel htmlFor={`estado-${solicitud.id}`}>Estado</FieldLabel>
@@ -92,7 +93,7 @@ export default async function Page() {
                                         <Button type="submit" size="sm">
                                             Guardar respuesta
                                         </Button>
-                                    </form>
+                                    </ActionForm>
                                 )}
                             </CardContent>
                         </Card>
