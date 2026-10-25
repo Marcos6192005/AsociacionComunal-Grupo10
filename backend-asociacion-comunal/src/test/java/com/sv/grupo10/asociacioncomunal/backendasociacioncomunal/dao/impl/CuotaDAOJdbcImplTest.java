@@ -10,6 +10,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -33,7 +34,7 @@ class CuotaDAOJdbcImplTest {
                 "vecino@adesco.com",
                 "Rosa Elena Martinez",
                 "Casa 12, Pasaje Los Pinos",
-                "2026-10",
+                "T" + UUID.randomUUID().toString().substring(0, 6),
                 8.00,
                 "PENDIENTE"
         );
