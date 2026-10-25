@@ -1,4 +1,6 @@
 package com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.services.impl;
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.RecursoNoEncontradoException;
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.ReglaNegocioException;
 
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.interfaces.UsuarioDAO;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.entities.Usuario;
@@ -46,7 +48,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public Usuario crearUsuario(Usuario usuario) {
         if (usuarioDAO.buscarPorCorreo(usuario.getCorreo()).isPresent()) {
-            throw new IllegalArgumentException("Ya existe un usuario con ese correo");
+            throw new ReglaNegocioException("Ya existe un usuario con ese correo");
         }
 
         validarUnicoPresidente(usuario);
@@ -78,7 +80,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         boolean actualizado = usuarioDAO.actualizarUsuario(usuario);
 
         if (!actualizado) {
-            throw new NoSuchElementException("No existe un usuario con id " + usuario.getId());
+            throw new RecursoNoEncontradoException("No existe un usuario con id " + usuario.getId());
         }
 
         return usuario;
@@ -89,7 +91,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         boolean eliminado = usuarioDAO.eliminarUsuario(id);
 
         if (!eliminado) {
-            throw new NoSuchElementException("No existe un usuario con id " + id);
+            throw new RecursoNoEncontradoException("No existe un usuario con id " + id);
         }
     }
 
@@ -103,7 +105,7 @@ public class UsuarioServiceImpl implements UsuarioService {
                         && !u.getId().equals(usuario.getId()));
 
         if (yaHayOtro) {
-            throw new IllegalArgumentException("Ya existe un presidente registrado");
+            throw new ReglaNegocioException("Ya existe un presidente registrado");
         }
     }
 }

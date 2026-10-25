@@ -8,6 +8,7 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.PersistenciaException;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -55,7 +56,7 @@ public class ComunicadoDAOJdbcImpl implements ComunicadoDAO {
             statement.setString(6, comunicado.getNombreAutor());
             statement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo guardar el comunicado", e);
+            throw new PersistenciaException("No se pudo guardar el comunicado", e);
         }
         return comunicado;
     }
@@ -70,7 +71,7 @@ public class ComunicadoDAOJdbcImpl implements ComunicadoDAO {
                 comunicados.add(mapear(resultSet));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo listar comunicados", e);
+            throw new PersistenciaException("No se pudo listar comunicados", e);
         }
         return comunicados;
     }
@@ -87,7 +88,7 @@ public class ComunicadoDAOJdbcImpl implements ComunicadoDAO {
                 return Optional.of(mapear(resultSet));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo buscar el comunicado", e);
+            throw new PersistenciaException("No se pudo buscar el comunicado", e);
         }
     }
 

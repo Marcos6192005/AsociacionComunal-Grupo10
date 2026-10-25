@@ -18,8 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/comunidad")
@@ -52,14 +50,7 @@ public class ComunidadProyectoController {
             @RequestBody VotoRequestDTO request,
             Authentication authentication
     ) {
-        try {
-            Voto voto = comunidadService.votar(id, authentication.getName(), request.valor());
-            return ResponseEntity.ok(voto);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("mensaje", e.getMessage()));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("mensaje", e.getMessage()));
-        }
+        return ResponseEntity.ok(comunidadService.votar(id, authentication.getName(), request.valor()));
     }
 
     @GetMapping("/comentarios")
@@ -73,13 +64,7 @@ public class ComunidadProyectoController {
             @RequestBody ComentarioRequestDTO request,
             Authentication authentication
     ) {
-        try {
-            Comentario comentario = comunidadService.comentar(id, authentication.getName(), request.texto());
-            return ResponseEntity.status(HttpStatus.CREATED).body(comentario);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("mensaje", e.getMessage()));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("mensaje", e.getMessage()));
-        }
+        Comentario comentario = comunidadService.comentar(id, authentication.getName(), request.texto());
+        return ResponseEntity.status(HttpStatus.CREATED).body(comentario);
     }
 }

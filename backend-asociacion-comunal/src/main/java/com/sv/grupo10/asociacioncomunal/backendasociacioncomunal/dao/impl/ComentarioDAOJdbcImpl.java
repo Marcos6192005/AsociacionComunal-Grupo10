@@ -8,6 +8,7 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.PersistenciaException;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -54,7 +55,7 @@ public class ComentarioDAOJdbcImpl implements ComentarioDAO {
             statement.setString(6, comentario.getFecha());
             statement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo guardar el comentario", e);
+            throw new PersistenciaException("No se pudo guardar el comentario", e);
         }
         return comentario;
     }
@@ -69,7 +70,7 @@ public class ComentarioDAOJdbcImpl implements ComentarioDAO {
                 comentarios.add(mapear(resultSet));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo listar comentarios", e);
+            throw new PersistenciaException("No se pudo listar comentarios", e);
         }
         return comentarios;
     }
@@ -86,7 +87,7 @@ public class ComentarioDAOJdbcImpl implements ComentarioDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo listar comentarios por proyecto", e);
+            throw new PersistenciaException("No se pudo listar comentarios por proyecto", e);
         }
         return comentarios;
     }

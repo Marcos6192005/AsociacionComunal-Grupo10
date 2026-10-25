@@ -8,6 +8,7 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.PersistenciaException;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -55,7 +56,7 @@ public class SolicitudDAOJdbcImpl implements SolicitudDAO {
             statement.setString(9, solicitud.getFecha());
             statement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo guardar la solicitud", e);
+            throw new PersistenciaException("No se pudo guardar la solicitud", e);
         }
         return solicitud;
     }
@@ -70,7 +71,7 @@ public class SolicitudDAOJdbcImpl implements SolicitudDAO {
                 solicitudes.add(mapear(resultSet));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo listar solicitudes", e);
+            throw new PersistenciaException("No se pudo listar solicitudes", e);
         }
         return solicitudes;
     }
@@ -87,7 +88,7 @@ public class SolicitudDAOJdbcImpl implements SolicitudDAO {
                 return Optional.of(mapear(resultSet));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo buscar la solicitud", e);
+            throw new PersistenciaException("No se pudo buscar la solicitud", e);
         }
     }
 
@@ -110,7 +111,7 @@ public class SolicitudDAOJdbcImpl implements SolicitudDAO {
             solicitud.setId(id);
             return Optional.of(solicitud);
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo actualizar la solicitud", e);
+            throw new PersistenciaException("No se pudo actualizar la solicitud", e);
         }
     }
 

@@ -19,8 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/admin/secretaria")
@@ -38,64 +36,34 @@ public class AdminSecretariaController {
     }
 
     @PutMapping("/solicitudes/{id}/responder")
-    public ResponseEntity<?> responderSolicitud(
+    public ResponseEntity<Solicitud> responderSolicitud(
             @PathVariable String id,
             @RequestBody ResponderSolicitudRequestDTO request,
             Authentication authentication
     ) {
-        try {
-            Solicitud actualizada = secretariaService.responderSolicitud(
-                    authentication.getName(),
-                    id,
-                    request
-            );
-            return ResponseEntity.ok(actualizada);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("mensaje", e.getMessage()));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("mensaje", e.getMessage()));
-        } catch (SecurityException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("mensaje", e.getMessage()));
-        }
+        return ResponseEntity.ok(secretariaService.responderSolicitud(authentication.getName(), id, request));
     }
 
     @GetMapping("/actas")
-    public ResponseEntity<?> listarActas(Authentication authentication) {
-        try {
-            return ResponseEntity.ok(secretariaService.listarActasAdmin(authentication.getName()));
-        } catch (SecurityException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("mensaje", e.getMessage()));
-        }
+    public ResponseEntity<List<Acta>> listarActas(Authentication authentication) {
+        return ResponseEntity.ok(secretariaService.listarActasAdmin(authentication.getName()));
     }
 
     @PostMapping("/actas")
-    public ResponseEntity<?> crearActa(
+    public ResponseEntity<Acta> crearActa(
             @RequestBody ActaRequestDTO request,
             Authentication authentication
     ) {
-        try {
-            Acta creada = secretariaService.crearActa(authentication.getName(), request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(creada);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("mensaje", e.getMessage()));
-        } catch (SecurityException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("mensaje", e.getMessage()));
-        }
+        Acta creada = secretariaService.crearActa(authentication.getName(), request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(creada);
     }
 
     @PutMapping("/actas/{id}/publicar")
-    public ResponseEntity<?> publicarActa(
+    public ResponseEntity<Acta> publicarActa(
             @PathVariable String id,
             Authentication authentication
     ) {
-        try {
-            Acta publicada = secretariaService.publicarActa(authentication.getName(), id);
-            return ResponseEntity.ok(publicada);
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("mensaje", e.getMessage()));
-        } catch (SecurityException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("mensaje", e.getMessage()));
-        }
+        return ResponseEntity.ok(secretariaService.publicarActa(authentication.getName(), id));
     }
 
     @GetMapping("/comunicados")
@@ -104,17 +72,11 @@ public class AdminSecretariaController {
     }
 
     @PostMapping("/comunicados")
-    public ResponseEntity<?> crearComunicado(
+    public ResponseEntity<Comunicado> crearComunicado(
             @RequestBody ComunicadoRequestDTO request,
             Authentication authentication
     ) {
-        try {
-            Comunicado creado = secretariaService.crearComunicado(authentication.getName(), request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(creado);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("mensaje", e.getMessage()));
-        } catch (SecurityException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("mensaje", e.getMessage()));
-        }
+        Comunicado creado = secretariaService.crearComunicado(authentication.getName(), request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
 }

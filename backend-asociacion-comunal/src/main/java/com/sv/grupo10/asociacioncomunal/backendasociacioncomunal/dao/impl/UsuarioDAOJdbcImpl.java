@@ -1,4 +1,5 @@
 package com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.impl;
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.ReglaNegocioException;
 
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.SemillaComunidad;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.interfaces.UsuarioDAO;
@@ -9,6 +10,7 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Repository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.PersistenciaException;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -40,7 +42,7 @@ public class UsuarioDAOJdbcImpl implements UsuarioDAO {
             bind(statement, usuario);
             statement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo guardar el usuario", e);
+            throw new PersistenciaException("No se pudo guardar el usuario", e);
         }
     }
 
@@ -57,7 +59,7 @@ public class UsuarioDAOJdbcImpl implements UsuarioDAO {
                 return Optional.of(mapear(resultSet));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo buscar el usuario por correo", e);
+            throw new PersistenciaException("No se pudo buscar el usuario por correo", e);
         }
     }
 
@@ -73,7 +75,7 @@ public class UsuarioDAOJdbcImpl implements UsuarioDAO {
             }
             return usuarios;
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo listar usuarios", e);
+            throw new PersistenciaException("No se pudo listar usuarios", e);
         }
     }
 
@@ -90,7 +92,7 @@ public class UsuarioDAOJdbcImpl implements UsuarioDAO {
                 return Optional.of(mapear(resultSet));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo buscar el usuario por id", e);
+            throw new PersistenciaException("No se pudo buscar el usuario por id", e);
         }
     }
 
@@ -107,7 +109,7 @@ public class UsuarioDAOJdbcImpl implements UsuarioDAO {
             statement.setString(7, usuario.getId());
             return statement.executeUpdate() == 1;
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo actualizar el usuario", e);
+            throw new PersistenciaException("No se pudo actualizar el usuario", e);
         }
     }
 
@@ -119,7 +121,7 @@ public class UsuarioDAOJdbcImpl implements UsuarioDAO {
             statement.setString(1, id);
             return statement.executeUpdate() == 1;
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo eliminar el usuario", e);
+            throw new PersistenciaException("No se pudo eliminar el usuario", e);
         }
     }
 
@@ -157,7 +159,7 @@ public class UsuarioDAOJdbcImpl implements UsuarioDAO {
             statement.setNull(inicio + 4, Types.VARCHAR);
             statement.setString(inicio + 5, miembro.getCargo());
         } else {
-            throw new IllegalArgumentException("Tipo de usuario no soportado");
+            throw new ReglaNegocioException("Tipo de usuario no soportado");
         }
     }
 
@@ -174,7 +176,7 @@ public class UsuarioDAOJdbcImpl implements UsuarioDAO {
         } else if ("DIRECTIVA".equals(tipo)) {
             usuario = new MiembroDirectiva(nombre, correo, password, resultSet.getString("cargo"));
         } else {
-            throw new IllegalArgumentException("Tipo de usuario desconocido: " + tipo);
+            throw new ReglaNegocioException("Tipo de usuario desconocido: " + tipo);
         }
         usuario.setId(id);
         return usuario;

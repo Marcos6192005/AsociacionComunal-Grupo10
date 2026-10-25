@@ -1,4 +1,6 @@
 package com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.services.impl;
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.RecursoNoEncontradoException;
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.ReglaNegocioException;
 
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.interfaces.ComentarioDAO;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.interfaces.ProyectoDAO;
@@ -65,7 +67,7 @@ public class ComunidadServiceImpl implements ComunidadService {
     @Override
     public Voto votar(String proyectoId, String correoUsuario, String valor) {
         proyectoDAO.buscarPorId(proyectoId)
-                .orElseThrow(() -> new NoSuchElementException("No existe el proyecto"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("No existe el proyecto"));
 
         String votoNormalizado = normalizarVoto(valor);
         Voto voto = new Voto(proyectoId, correoUsuario, votoNormalizado);
@@ -99,10 +101,10 @@ public class ComunidadServiceImpl implements ComunidadService {
     @Override
     public Comentario comentar(String proyectoId, String correoUsuario, String texto) {
         proyectoDAO.buscarPorId(proyectoId)
-                .orElseThrow(() -> new NoSuchElementException("No existe el proyecto"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("No existe el proyecto"));
 
         if (texto == null || texto.isBlank()) {
-            throw new IllegalArgumentException("El comentario no puede estar vacio");
+            throw new ReglaNegocioException("El comentario no puede estar vacio");
         }
 
         String nombre = usuarioService.buscarPorCorreo(correoUsuario)
@@ -168,13 +170,13 @@ public class ComunidadServiceImpl implements ComunidadService {
 
     private String normalizarVoto(String valor) {
         if (valor == null) {
-            throw new IllegalArgumentException("Debes indicar A_FAVOR o EN_CONTRA");
+            throw new ReglaNegocioException("Debes indicar A_FAVOR o EN_CONTRA");
         }
 
         String normalizado = valor.trim().toUpperCase();
 
         if (!A_FAVOR.equals(normalizado) && !EN_CONTRA.equals(normalizado)) {
-            throw new IllegalArgumentException("El voto debe ser A_FAVOR o EN_CONTRA");
+            throw new ReglaNegocioException("El voto debe ser A_FAVOR o EN_CONTRA");
         }
 
         return normalizado;

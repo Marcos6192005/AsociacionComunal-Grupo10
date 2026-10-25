@@ -8,6 +8,7 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.PersistenciaException;
 import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -59,7 +60,7 @@ public class MovimientoDAOJdbcImpl implements MovimientoDAO {
             statement.setString(9, movimiento.getCuotaId());
             statement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo guardar el movimiento", e);
+            throw new PersistenciaException("No se pudo guardar el movimiento", e);
         }
         return movimiento;
     }
@@ -74,7 +75,7 @@ public class MovimientoDAOJdbcImpl implements MovimientoDAO {
                 movimientos.add(mapear(resultSet));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo listar movimientos", e);
+            throw new PersistenciaException("No se pudo listar movimientos", e);
         }
         return movimientos;
     }
