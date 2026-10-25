@@ -4,6 +4,7 @@ import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.SemillaComu
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.interfaces.ComentarioDAO;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.entities.Comentario;
 import jakarta.annotation.PostConstruct;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
@@ -17,6 +18,7 @@ import java.util.List;
 
 @Repository
 @Primary
+@DependsOn({"usuarioDAOJdbcImpl", "proyectoDAOJdbcImpl"})
 public class ComentarioDAOJdbcImpl implements ComentarioDAO {
 
     private static final String COLUMNAS = "id, proyecto_id, correo_autor, nombre_autor, texto, fecha";
