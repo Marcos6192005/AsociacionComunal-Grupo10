@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -93,10 +94,11 @@ class ComentarioDAOJdbcImplTest {
 
         assertNotNull(c1.getId());
         assertNotNull(c2.getId());
-        assertEquals(c1.getId(), comentarioDAO.listarPorProyecto(PROYECTO_TEST).stream()
-                .filter(c -> c.getTexto().equals("Texto 1"))
+        assertNotEquals(c1.getId(), c2.getId());
+        assertEquals("Texto 1", comentarioDAO.listarPorProyecto(PROYECTO_TEST).stream()
+                .filter(c -> c1.getId().equals(c.getId()))
                 .findFirst()
-                .map(Comentario::getId)
+                .map(Comentario::getTexto)
                 .orElse(null));
     }
 }
