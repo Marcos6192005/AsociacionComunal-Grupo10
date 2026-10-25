@@ -36,6 +36,29 @@ public class RegistroEmail implements Serializable {
         this.estado = EstadoEnvio.PENDIENTE;
     }
 
+    /** Rebuilds a row read from the database. The creation constructor always assigns a new id. */
+    public RegistroEmail(
+            String id,
+            String destinatario,
+            String asunto,
+            LocalDateTime fechaCreacion,
+            EstadoEnvio estado,
+            int intentos,
+            LocalDateTime fechaEnvio,
+            String ultimoError,
+            String hiloProcesador
+    ) {
+        this.id = id;
+        this.destinatario = destinatario;
+        this.asunto = asunto;
+        this.fechaCreacion = fechaCreacion;
+        this.estado = estado;
+        this.intentos = intentos;
+        this.fechaEnvio = fechaEnvio;
+        this.ultimoError = ultimoError;
+        this.hiloProcesador = hiloProcesador;
+    }
+
     public synchronized void registrarIntento(String nombreHilo) {
         this.intentos++;
         this.hiloProcesador = nombreHilo;
