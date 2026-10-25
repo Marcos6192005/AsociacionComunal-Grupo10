@@ -2,6 +2,11 @@
 
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
+import {
+  MENSAJE_SIN_SERVIDOR,
+  mensajeDeRespuesta,
+  type FormState,
+} from "@/lib/form-state"
 
 export type AcuerdoActa = {
   texto: string
@@ -80,16 +85,18 @@ export async function listarSolicitudesAdminAction(): Promise<{
   }
 }
 
-export async function responderSolicitudAction(formData: FormData): Promise<void> {
+export async function responderSolicitudAction(
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
   const token = await getToken()
   const id = formData.get("id")?.toString()
   const estado = formData.get("estado")?.toString()
   const respuesta = formData.get("respuesta")?.toString()
   const proyectoId = formData.get("proyectoId")?.toString()
 
-  if (!token || !id || !estado) {
-    return
-  }
+  if (!token) return { ok: false, mensaje: "No autenticado. Inicia sesion." }
+  if (!id || !estado) return { ok: false, mensaje: "Falta la solicitud o el estado." }
 
   try {
     const response = await fetch(`${ADMIN_URL}/solicitudes/${id}/responder`, {
@@ -104,12 +111,13 @@ export async function responderSolicitudAction(formData: FormData): Promise<void
     })
 
     if (!response.ok) {
-      return
+      return { ok: false, mensaje: await mensajeDeRespuesta(response, "No se pudo guardar la respuesta.") }
     }
 
     revalidatePath("/administracion/secretaria/solicitudes")
+    return { ok: true, mensaje: "Respuesta guardada." }
   } catch {
-    return
+    return { ok: false, mensaje: MENSAJE_SIN_SERVIDOR }
   }
 }
 
@@ -133,7 +141,10 @@ export async function listarActasAdminAction(): Promise<{
   }
 }
 
-export async function crearActaAction(formData: FormData): Promise<void> {
+export async function crearActaAction(
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
   const token = await getToken()
   const titulo = formData.get("titulo")?.toString()
   const contenido = formData.get("contenido")?.toString()
@@ -141,9 +152,8 @@ export async function crearActaAction(formData: FormData): Promise<void> {
   const acuerdoTexto = formData.get("acuerdoTexto")?.toString()
   const acuerdoProyectoId = formData.get("acuerdoProyectoId")?.toString()
 
-  if (!token || !titulo || !contenido) {
-    return
-  }
+  if (!token) return { ok: false, mensaje: "No autenticado. Inicia sesion." }
+  if (!titulo || !contenido) return { ok: false, mensaje: "Completa titulo y contenido." }
 
   const acuerdos =
     acuerdoTexto && acuerdoTexto.trim()
@@ -159,22 +169,25 @@ export async function crearActaAction(formData: FormData): Promise<void> {
     })
 
     if (!response.ok) {
-      return
+      return { ok: false, mensaje: await mensajeDeRespuesta(response, "No se pudo guardar el acta.") }
     }
 
     revalidatePath("/administracion/secretaria/actas")
+    return { ok: true, mensaje: "Borrador guardado." }
   } catch {
-    return
+    return { ok: false, mensaje: MENSAJE_SIN_SERVIDOR }
   }
 }
 
-export async function publicarActaAction(formData: FormData): Promise<void> {
+export async function publicarActaAction(
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
   const token = await getToken()
   const id = formData.get("id")?.toString()
 
-  if (!token || !id) {
-    return
-  }
+  if (!token) return { ok: false, mensaje: "No autenticado. Inicia sesion." }
+  if (!id) return { ok: false, mensaje: "Falta el acta." }
 
   try {
     const response = await fetch(`${ADMIN_URL}/actas/${id}/publicar`, {
@@ -184,13 +197,14 @@ export async function publicarActaAction(formData: FormData): Promise<void> {
     })
 
     if (!response.ok) {
-      return
+      return { ok: false, mensaje: await mensajeDeRespuesta(response, "No se pudo publicar el acta.") }
     }
 
     revalidatePath("/administracion/secretaria/actas")
     revalidatePath("/comunidad/secretaria/actas")
+    return { ok: true, mensaje: "Acta publicada." }
   } catch {
-    return
+    return { ok: false, mensaje: MENSAJE_SIN_SERVIDOR }
   }
 }
 
@@ -213,14 +227,16 @@ export async function listarComunicadosAdminAction(): Promise<{
   }
 }
 
-export async function crearComunicadoAction(formData: FormData): Promise<void> {
+export async function crearComunicadoAction(
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
   const token = await getToken()
   const titulo = formData.get("titulo")?.toString()
   const contenido = formData.get("contenido")?.toString()
 
-  if (!token || !titulo || !contenido) {
-    return
-  }
+  if (!token) return { ok: false, mensaje: "No autenticado. Inicia sesion." }
+  if (!titulo || !contenido) return { ok: false, mensaje: "Completa titulo y contenido." }
 
   try {
     const response = await fetch(`${ADMIN_URL}/comunicados`, {
@@ -231,13 +247,14 @@ export async function crearComunicadoAction(formData: FormData): Promise<void> {
     })
 
     if (!response.ok) {
-      return
+      return { ok: false, mensaje: await mensajeDeRespuesta(response, "No se pudo publicar el comunicado.") }
     }
 
     revalidatePath("/administracion/secretaria/comunicados")
     revalidatePath("/comunidad/secretaria/comunicados")
+    return { ok: true, mensaje: "Comunicado publicado." }
   } catch {
-    return
+    return { ok: false, mensaje: MENSAJE_SIN_SERVIDOR }
   }
 }
 
@@ -261,14 +278,16 @@ export async function listarMisSolicitudesAction(): Promise<{
   }
 }
 
-export async function crearSolicitudVecinoAction(formData: FormData): Promise<void> {
+export async function crearSolicitudVecinoAction(
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
   const token = await getToken()
   const titulo = formData.get("titulo")?.toString()
   const descripcion = formData.get("descripcion")?.toString()
 
-  if (!token || !titulo || !descripcion) {
-    return
-  }
+  if (!token) return { ok: false, mensaje: "No autenticado. Inicia sesion." }
+  if (!titulo || !descripcion) return { ok: false, mensaje: "Completa titulo y descripcion." }
 
   try {
     const response = await fetch(`${COMUNIDAD_URL}/solicitudes`, {
@@ -279,12 +298,13 @@ export async function crearSolicitudVecinoAction(formData: FormData): Promise<vo
     })
 
     if (!response.ok) {
-      return
+      return { ok: false, mensaje: await mensajeDeRespuesta(response, "No se pudo enviar la solicitud.") }
     }
 
     revalidatePath("/comunidad/secretaria/solicitudes")
+    return { ok: true, mensaje: "Solicitud enviada." }
   } catch {
-    return
+    return { ok: false, mensaje: MENSAJE_SIN_SERVIDOR }
   }
 }
 

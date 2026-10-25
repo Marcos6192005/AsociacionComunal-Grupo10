@@ -2,6 +2,11 @@
 
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
+import {
+  MENSAJE_SIN_SERVIDOR,
+  mensajeDeRespuesta,
+  type FormState,
+} from "@/lib/form-state"
 
 export type Movimiento = {
   id: string
@@ -73,7 +78,10 @@ export async function listarMovimientosAction(): Promise<{
   }
 }
 
-export async function registrarMovimientoAction(formData: FormData): Promise<void> {
+export async function registrarMovimientoAction(
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
   const token = await getToken()
   const tipo = formData.get("tipo")?.toString()
   const concepto = formData.get("concepto")?.toString()
@@ -81,8 +89,9 @@ export async function registrarMovimientoAction(formData: FormData): Promise<voi
   const fecha = formData.get("fecha")?.toString()
   const proyectoId = formData.get("proyectoId")?.toString()
 
-  if (!token || !tipo || !concepto || !monto) {
-    return
+  if (!token) return { ok: false, mensaje: "No autenticado. Inicia sesion." }
+  if (!tipo || !concepto || !monto) {
+    return { ok: false, mensaje: "Completa tipo, concepto y monto." }
   }
 
   try {
@@ -100,14 +109,15 @@ export async function registrarMovimientoAction(formData: FormData): Promise<voi
     })
 
     if (!response.ok) {
-      return
+      return { ok: false, mensaje: await mensajeDeRespuesta(response, "No se pudo registrar el movimiento.") }
     }
 
     revalidatePath("/administracion/tesoreria/gastos")
     revalidatePath("/administracion/tesoreria/balance")
     revalidatePath("/comunidad/tesoreria")
+    return { ok: true, mensaje: "Movimiento registrado." }
   } catch {
-    return
+    return { ok: false, mensaje: MENSAJE_SIN_SERVIDOR }
   }
 }
 
@@ -150,14 +160,18 @@ export async function listarCuotasAdminAction(): Promise<{
   }
 }
 
-export async function crearCuotaAction(formData: FormData): Promise<void> {
+export async function crearCuotaAction(
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
   const token = await getToken()
   const correoVecino = formData.get("correoVecino")?.toString()
   const periodo = formData.get("periodo")?.toString()
   const monto = Number(formData.get("monto"))
 
-  if (!token || !correoVecino || !periodo || !monto) {
-    return
+  if (!token) return { ok: false, mensaje: "No autenticado. Inicia sesion." }
+  if (!correoVecino || !periodo || !monto) {
+    return { ok: false, mensaje: "Completa vecino, periodo y monto." }
   }
 
   try {
@@ -169,22 +183,65 @@ export async function crearCuotaAction(formData: FormData): Promise<void> {
     })
 
     if (!response.ok) {
-      return
+      return { ok: false, mensaje: await mensajeDeRespuesta(response, "No se pudo crear la cuota.") }
     }
 
     revalidatePath("/administracion/tesoreria/contribuciones")
+    return { ok: true, mensaje: "Cuota creada." }
   } catch {
-    return
+    return { ok: false, mensaje: MENSAJE_SIN_SERVIDOR }
   }
 }
 
-export async function marcarCuotaPagadaAction(formData: FormData): Promise<void> {
+export async function generarCuotasAction(
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const token = await getToken()
+  const periodo = formData.get("periodo")?.toString()
+  const monto = Number(formData.get("monto"))
+
+  if (!token) return { ok: false, mensaje: "No autenticado. Inicia sesion." }
+  if (!periodo || !monto) {
+    return { ok: false, mensaje: "Completa el periodo y el monto." }
+  }
+
+  try {
+    const response = await fetch(`${ADMIN_URL}/cuotas/generar`, {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify({ periodo, monto }),
+      cache: "no-store",
+    })
+
+    if (!response.ok) {
+      return { ok: false, mensaje: await mensajeDeRespuesta(response, "No se pudieron generar las cuotas.") }
+    }
+
+    const data = (await response.json()) as {
+      creadas?: number
+      existentes?: number
+      fallidas?: number
+    }
+    revalidatePath("/administracion/tesoreria/contribuciones")
+    return {
+      ok: true,
+      mensaje: `Cuotas de ${periodo}: ${data.creadas ?? 0} creadas, ${data.existentes ?? 0} ya existian, ${data.fallidas ?? 0} fallidas.`,
+    }
+  } catch {
+    return { ok: false, mensaje: MENSAJE_SIN_SERVIDOR }
+  }
+}
+
+export async function marcarCuotaPagadaAction(
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
   const token = await getToken()
   const id = formData.get("id")?.toString()
 
-  if (!token || !id) {
-    return
-  }
+  if (!token) return { ok: false, mensaje: "No autenticado. Inicia sesion." }
+  if (!id) return { ok: false, mensaje: "Falta la cuota." }
 
   try {
     const response = await fetch(`${ADMIN_URL}/cuotas/${id}/pagar`, {
@@ -194,15 +251,16 @@ export async function marcarCuotaPagadaAction(formData: FormData): Promise<void>
     })
 
     if (!response.ok) {
-      return
+      return { ok: false, mensaje: await mensajeDeRespuesta(response, "No se pudo marcar la cuota como pagada.") }
     }
 
     revalidatePath("/administracion/tesoreria/contribuciones")
     revalidatePath("/administracion/tesoreria/balance")
     revalidatePath("/administracion/tesoreria/gastos")
     revalidatePath("/comunidad/tesoreria")
+    return { ok: true, mensaje: "Cuota marcada como pagada." }
   } catch {
-    return
+    return { ok: false, mensaje: MENSAJE_SIN_SERVIDOR }
   }
 }
 

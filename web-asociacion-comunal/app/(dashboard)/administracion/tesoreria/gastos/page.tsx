@@ -3,6 +3,7 @@ import {
     listarMovimientosAction,
     registrarMovimientoAction,
 } from "@/actions/tesoreria-action"
+import { ActionForm } from "@/components/forms/action-form"
 import { PageHeader } from "@/components/dashboard/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -35,7 +36,7 @@ export default async function Page() {
                         <CardTitle>Nuevo movimiento</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <form action={registrarMovimientoAction} className="grid gap-3">
+                        <ActionForm action={registrarMovimientoAction} className="grid gap-3">
                             <Field>
                                 <FieldLabel htmlFor="tipo">Tipo</FieldLabel>
                                 <select
@@ -66,7 +67,7 @@ export default async function Page() {
                                 <Input id="proyectoId" name="proyectoId" />
                             </Field>
                             <Button type="submit">Registrar</Button>
-                        </form>
+                        </ActionForm>
                     </CardContent>
                 </Card>
             ) : (

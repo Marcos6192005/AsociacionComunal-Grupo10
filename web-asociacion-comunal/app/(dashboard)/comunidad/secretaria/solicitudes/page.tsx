@@ -2,6 +2,7 @@ import {
     crearSolicitudVecinoAction,
     listarMisSolicitudesAction,
 } from "@/actions/secretaria-action"
+import { ActionForm } from "@/components/forms/action-form"
 import { PageHeader } from "@/components/dashboard/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -28,7 +29,7 @@ export default async function Page() {
                     <CardTitle>Nueva solicitud</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <form action={crearSolicitudVecinoAction} className="grid gap-3">
+                    <ActionForm action={crearSolicitudVecinoAction} className="grid gap-3">
                         <Field>
                             <FieldLabel htmlFor="titulo">Titulo</FieldLabel>
                             <Input id="titulo" name="titulo" required />
@@ -38,7 +39,7 @@ export default async function Page() {
                             <Input id="descripcion" name="descripcion" required />
                         </Field>
                         <Button type="submit">Enviar solicitud</Button>
-                    </form>
+                    </ActionForm>
                 </CardContent>
             </Card>
 

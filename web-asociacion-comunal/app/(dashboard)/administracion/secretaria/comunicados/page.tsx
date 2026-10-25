@@ -3,6 +3,7 @@ import {
     getUserCargo,
     listarComunicadosAdminAction,
 } from "@/actions/secretaria-action"
+import { ActionForm } from "@/components/forms/action-form"
 import { PageHeader } from "@/components/dashboard/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -35,7 +36,7 @@ export default async function Page() {
                         <CardTitle>Nuevo comunicado</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <form action={crearComunicadoAction} className="grid gap-3">
+                        <ActionForm action={crearComunicadoAction} className="grid gap-3">
                             <Field>
                                 <FieldLabel htmlFor="titulo">Titulo</FieldLabel>
                                 <Input id="titulo" name="titulo" required />
@@ -45,7 +46,7 @@ export default async function Page() {
                                 <Input id="contenido" name="contenido" required />
                             </Field>
                             <Button type="submit">Publicar</Button>
-                        </form>
+                        </ActionForm>
                     </CardContent>
                 </Card>
             ) : (

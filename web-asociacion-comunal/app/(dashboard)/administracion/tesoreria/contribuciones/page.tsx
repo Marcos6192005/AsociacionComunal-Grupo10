@@ -1,10 +1,12 @@
 import { listarUsuariosAction } from "@/actions/usuario-action"
 import {
     crearCuotaAction,
+    generarCuotasAction,
     getUserCargoTesoreria,
     listarCuotasAdminAction,
     marcarCuotaPagadaAction,
 } from "@/actions/tesoreria-action"
+import { ActionForm } from "@/components/forms/action-form"
 import { PageHeader } from "@/components/dashboard/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -21,6 +23,8 @@ export default async function Page() {
     const cuotas = cuotasResult.data ?? []
     const puedeEscribir = puedeEscribirTesoreria(cargo)
     const vecinos = usuarios.filter((usuario) => usuario.rol === "VECINO")
+    const hoy = new Date()
+    const periodoActual = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}`
 
     return (
         <div>
@@ -39,7 +43,7 @@ export default async function Page() {
                         <CardTitle>Nueva cuota</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <form action={crearCuotaAction} className="grid gap-3">
+                        <ActionForm action={crearCuotaAction} className="grid gap-3">
                             <Field>
                                 <FieldLabel htmlFor="correoVecino">Vecino</FieldLabel>
                                 <select
@@ -64,14 +68,51 @@ export default async function Page() {
                                 <Input id="monto" name="monto" type="number" step="0.01" min="0.01" required />
                             </Field>
                             <Button type="submit">Crear cuota</Button>
-                        </form>
+                        </ActionForm>
                     </CardContent>
                 </Card>
-            ) : (
+            ) : null}
+
+            {puedeEscribir ? (
+                <Card className="mb-6">
+                    <CardHeader>
+                        <CardTitle>Cuotas del mes</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <ActionForm action={generarCuotasAction} className="grid gap-3">
+                            <Field>
+                                <FieldLabel htmlFor="periodoMes">Periodo</FieldLabel>
+                                <Input
+                                    id="periodoMes"
+                                    name="periodo"
+                                    defaultValue={periodoActual}
+                                    placeholder="2026-10"
+                                    required
+                                />
+                            </Field>
+                            <Field>
+                                <FieldLabel htmlFor="montoMes">Monto</FieldLabel>
+                                <Input
+                                    id="montoMes"
+                                    name="monto"
+                                    type="number"
+                                    step="0.01"
+                                    min="0.01"
+                                    defaultValue="8"
+                                    required
+                                />
+                            </Field>
+                            <Button type="submit">Generar cuotas del mes</Button>
+                        </ActionForm>
+                    </CardContent>
+                </Card>
+            ) : null}
+
+            {!puedeEscribir ? (
                 <p className="mb-4 text-sm text-muted-foreground">
                     Tu cargo solo permite lectura. Escritura: Presidente o Tesorero.
                 </p>
-            )}
+            ) : null}
 
             {cuotas.length === 0 ? (
                 <p className="text-sm text-muted-foreground">Todavía no hay cuotas.</p>
@@ -93,12 +134,15 @@ export default async function Page() {
                                     <p className="text-sm">Pagada el {cuota.fechaPago}</p>
                                 )}
                                 {puedeEscribir && cuota.estado === "PENDIENTE" && (
-                                    <form action={marcarCuotaPagadaAction}>
+                                    <ActionForm
+                                        action={marcarCuotaPagadaAction}
+                                        confirmMessage="Marcar esta cuota como pagada? Se registra un ingreso."
+                                    >
                                         <input type="hidden" name="id" value={cuota.id} />
                                         <Button type="submit" size="sm" variant="outline">
                                             Marcar como pagada
                                         </Button>
-                                    </form>
+                                    </ActionForm>
                                 )}
                             </CardContent>
                         </Card>
