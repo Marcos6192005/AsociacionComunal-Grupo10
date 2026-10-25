@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/comunidad/secretaria")
@@ -37,12 +36,8 @@ public class ComunidadSecretariaController {
             @RequestBody SolicitudRequestDTO request,
             Authentication authentication
     ) {
-        try {
-            Solicitud creada = secretariaService.crearSolicitud(authentication.getName(), request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(creada);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("mensaje", e.getMessage()));
-        }
+        Solicitud creada = secretariaService.crearSolicitud(authentication.getName(), request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(creada);
     }
 
     @GetMapping("/actas")

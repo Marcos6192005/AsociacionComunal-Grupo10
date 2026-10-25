@@ -1,4 +1,7 @@
 package com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.services.impl;
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.AccesoDenegadoException;
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.RecursoNoEncontradoException;
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.ReglaNegocioException;
 
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.interfaces.ActaDAO;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.interfaces.ComunicadoDAO;
@@ -94,10 +97,10 @@ public class SecretariaServiceImpl implements SecretariaService {
     @Override
     public Solicitud crearSolicitud(String correoAutor, SolicitudRequestDTO request) {
         if (request.titulo() == null || request.titulo().isBlank()) {
-            throw new IllegalArgumentException("El titulo es obligatorio");
+            throw new ReglaNegocioException("El titulo es obligatorio");
         }
         if (request.descripcion() == null || request.descripcion().isBlank()) {
-            throw new IllegalArgumentException("La descripcion es obligatoria");
+            throw new ReglaNegocioException("La descripcion es obligatoria");
         }
 
         String nombre = usuarioService.buscarPorCorreo(correoAutor)
@@ -123,15 +126,15 @@ public class SecretariaServiceImpl implements SecretariaService {
         exigirEscrituraSecretaria(correoAdmin);
 
         Solicitud existente = solicitudDAO.buscarPorId(solicitudId)
-                .orElseThrow(() -> new NoSuchElementException("No existe la solicitud"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("No existe la solicitud"));
 
         if (request.estado() == null || request.estado().isBlank()) {
-            throw new IllegalArgumentException("Debes indicar el estado de la respuesta");
+            throw new ReglaNegocioException("Debes indicar el estado de la respuesta");
         }
 
         String estado = request.estado().trim().toUpperCase();
         if (!ESTADOS_RESPUESTA.contains(estado)) {
-            throw new IllegalArgumentException("Estado invalido. Usa EN_REVISION, RESUELTA o RECHAZADA");
+            throw new ReglaNegocioException("Estado invalido. Usa EN_REVISION, RESUELTA o RECHAZADA");
         }
 
         existente.setEstado(estado);
@@ -143,7 +146,7 @@ public class SecretariaServiceImpl implements SecretariaService {
         }
 
         Solicitud actualizada = solicitudDAO.actualizar(solicitudId, existente)
-                .orElseThrow(() -> new NoSuchElementException("No se pudo actualizar la solicitud"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("No se pudo actualizar la solicitud"));
 
         if (ESTADOS_CON_CORREO.contains(actualizada.getEstado())) {
             notificacionCorreo.avisar(new EmailSolicitudRespondida(
@@ -175,10 +178,10 @@ public class SecretariaServiceImpl implements SecretariaService {
         MiembroDirectiva admin = exigirEscrituraSecretaria(correoAdmin);
 
         if (request.titulo() == null || request.titulo().isBlank()) {
-            throw new IllegalArgumentException("El titulo del acta es obligatorio");
+            throw new ReglaNegocioException("El titulo del acta es obligatorio");
         }
         if (request.contenido() == null || request.contenido().isBlank()) {
-            throw new IllegalArgumentException("El contenido del acta es obligatorio");
+            throw new ReglaNegocioException("El contenido del acta es obligatorio");
         }
 
         String fecha = request.fecha() != null && !request.fecha().isBlank()
@@ -205,12 +208,12 @@ public class SecretariaServiceImpl implements SecretariaService {
         exigirEscrituraSecretaria(correoAdmin);
 
         Acta existente = actaDAO.buscarPorId(actaId)
-                .orElseThrow(() -> new NoSuchElementException("No existe el acta"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("No existe el acta"));
 
         existente.setEstado(ESTADO_PUBLICADA);
 
         return actaDAO.actualizar(actaId, existente)
-                .orElseThrow(() -> new NoSuchElementException("No se pudo publicar el acta"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("No se pudo publicar el acta"));
     }
 
     @Override
@@ -223,10 +226,10 @@ public class SecretariaServiceImpl implements SecretariaService {
         MiembroDirectiva admin = exigirEscrituraSecretaria(correoAdmin);
 
         if (request.titulo() == null || request.titulo().isBlank()) {
-            throw new IllegalArgumentException("El titulo del comunicado es obligatorio");
+            throw new ReglaNegocioException("El titulo del comunicado es obligatorio");
         }
         if (request.contenido() == null || request.contenido().isBlank()) {
-            throw new IllegalArgumentException("El contenido del comunicado es obligatorio");
+            throw new ReglaNegocioException("El contenido del comunicado es obligatorio");
         }
 
         Comunicado comunicado = new Comunicado(
@@ -319,7 +322,7 @@ public class SecretariaServiceImpl implements SecretariaService {
         String cargo = Roles.normalizar(miembro.getCargo());
 
         if (!CARGOS_ESCRITURA.contains(cargo)) {
-            throw new SecurityException("Solo Presidente o Secretario pueden escribir en secretaria");
+            throw new AccesoDenegadoException("Solo Presidente o Secretario pueden escribir en secretaria");
         }
 
         return miembro;
@@ -327,10 +330,10 @@ public class SecretariaServiceImpl implements SecretariaService {
 
     private MiembroDirectiva exigirMiembroDirectiva(String correoAdmin) {
         Usuario usuario = usuarioService.buscarPorCorreo(correoAdmin)
-                .orElseThrow(() -> new SecurityException("Usuario no autenticado"));
+                .orElseThrow(() -> new AccesoDenegadoException("Usuario no autenticado"));
 
         if (!(usuario instanceof MiembroDirectiva miembro)) {
-            throw new SecurityException("Se requiere un miembro de la directiva");
+            throw new AccesoDenegadoException("Se requiere un miembro de la directiva");
         }
 
         return miembro;

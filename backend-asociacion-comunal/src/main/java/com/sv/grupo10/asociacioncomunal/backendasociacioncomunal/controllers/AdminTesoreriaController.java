@@ -18,8 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/admin/tesoreria")
@@ -32,27 +30,17 @@ public class AdminTesoreriaController {
     }
 
     @GetMapping("/movimientos")
-    public ResponseEntity<?> listarMovimientos(Authentication authentication) {
-        try {
-            return ResponseEntity.ok(tesoreriaService.listarMovimientos(authentication.getName()));
-        } catch (SecurityException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("mensaje", e.getMessage()));
-        }
+    public ResponseEntity<List<Movimiento>> listarMovimientos(Authentication authentication) {
+        return ResponseEntity.ok(tesoreriaService.listarMovimientos(authentication.getName()));
     }
 
     @PostMapping("/movimientos")
-    public ResponseEntity<?> registrarMovimiento(
+    public ResponseEntity<Movimiento> registrarMovimiento(
             @RequestBody MovimientoRequestDTO request,
             Authentication authentication
     ) {
-        try {
-            Movimiento creado = tesoreriaService.registrarMovimiento(authentication.getName(), request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(creado);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("mensaje", e.getMessage()));
-        } catch (SecurityException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("mensaje", e.getMessage()));
-        }
+        Movimiento creado = tesoreriaService.registrarMovimiento(authentication.getName(), request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
 
     @GetMapping("/balance")
@@ -61,45 +49,24 @@ public class AdminTesoreriaController {
     }
 
     @GetMapping("/cuotas")
-    public ResponseEntity<?> listarCuotas(Authentication authentication) {
-        try {
-            return ResponseEntity.ok(tesoreriaService.listarCuotas(authentication.getName()));
-        } catch (SecurityException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("mensaje", e.getMessage()));
-        }
+    public ResponseEntity<List<Cuota>> listarCuotas(Authentication authentication) {
+        return ResponseEntity.ok(tesoreriaService.listarCuotas(authentication.getName()));
     }
 
     @PostMapping("/cuotas")
-    public ResponseEntity<?> crearCuota(
+    public ResponseEntity<Cuota> crearCuota(
             @RequestBody CuotaRequestDTO request,
             Authentication authentication
     ) {
-        try {
-            Cuota creada = tesoreriaService.crearCuota(authentication.getName(), request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(creada);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("mensaje", e.getMessage()));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("mensaje", e.getMessage()));
-        } catch (SecurityException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("mensaje", e.getMessage()));
-        }
+        Cuota creada = tesoreriaService.crearCuota(authentication.getName(), request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(creada);
     }
 
     @PutMapping("/cuotas/{id}/pagar")
-    public ResponseEntity<?> marcarPagada(
+    public ResponseEntity<Cuota> marcarPagada(
             @PathVariable String id,
             Authentication authentication
     ) {
-        try {
-            Cuota pagada = tesoreriaService.marcarCuotaPagada(authentication.getName(), id);
-            return ResponseEntity.ok(pagada);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("mensaje", e.getMessage()));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("mensaje", e.getMessage()));
-        } catch (SecurityException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("mensaje", e.getMessage()));
-        }
+        return ResponseEntity.ok(tesoreriaService.marcarCuotaPagada(authentication.getName(), id));
     }
 }

@@ -8,6 +8,7 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.PersistenciaException;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -64,7 +65,7 @@ public class EmailLogDAOJdbcImpl implements EmailLogDAO {
             statement.setString(9, registro.getHiloProcesador());
             statement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo guardar el registro de correo", e);
+            throw new PersistenciaException("No se pudo guardar el registro de correo", e);
         }
     }
 
@@ -83,7 +84,7 @@ public class EmailLogDAOJdbcImpl implements EmailLogDAO {
             statement.setString(9, registro.getId());
             statement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo actualizar el registro de correo", e);
+            throw new PersistenciaException("No se pudo actualizar el registro de correo", e);
         }
     }
 
@@ -99,7 +100,7 @@ public class EmailLogDAOJdbcImpl implements EmailLogDAO {
                 return Optional.of(mapear(resultSet));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo buscar el registro de correo", e);
+            throw new PersistenciaException("No se pudo buscar el registro de correo", e);
         }
     }
 
@@ -113,7 +114,7 @@ public class EmailLogDAOJdbcImpl implements EmailLogDAO {
                 registros.add(mapear(resultSet));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo listar la bitacora de correos", e);
+            throw new PersistenciaException("No se pudo listar la bitacora de correos", e);
         }
         return registros;
     }

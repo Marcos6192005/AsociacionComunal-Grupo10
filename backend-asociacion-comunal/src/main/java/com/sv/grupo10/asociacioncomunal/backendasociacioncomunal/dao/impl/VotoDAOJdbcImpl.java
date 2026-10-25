@@ -8,6 +8,7 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.PersistenciaException;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -56,7 +57,7 @@ public class VotoDAOJdbcImpl implements VotoDAO {
                 votos.add(mapear(resultSet));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo listar votos", e);
+            throw new PersistenciaException("No se pudo listar votos", e);
         }
         return votos;
     }
@@ -73,7 +74,7 @@ public class VotoDAOJdbcImpl implements VotoDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo listar votos del proyecto", e);
+            throw new PersistenciaException("No se pudo listar votos del proyecto", e);
         }
         return votos;
     }
@@ -91,7 +92,7 @@ public class VotoDAOJdbcImpl implements VotoDAO {
                 return Optional.of(mapear(resultSet));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo buscar el voto", e);
+            throw new PersistenciaException("No se pudo buscar el voto", e);
         }
     }
 
@@ -109,7 +110,7 @@ public class VotoDAOJdbcImpl implements VotoDAO {
             statement.setString(4, voto.getValor());
             statement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo guardar el voto", e);
+            throw new PersistenciaException("No se pudo guardar el voto", e);
         }
         return voto;
     }
@@ -122,7 +123,7 @@ public class VotoDAOJdbcImpl implements VotoDAO {
             statement.executeUpdate();
             voto.setId(id);
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo actualizar el voto", e);
+            throw new PersistenciaException("No se pudo actualizar el voto", e);
         }
         return voto;
     }

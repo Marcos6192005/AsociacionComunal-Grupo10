@@ -8,6 +8,7 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.PersistenciaException;
 import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -62,7 +63,7 @@ public class CuotaDAOJdbcImpl implements CuotaDAO {
             statement.setString(8, cuota.getFechaPago());
             statement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo guardar la cuota", e);
+            throw new PersistenciaException("No se pudo guardar la cuota", e);
         }
         return cuota;
     }
@@ -77,7 +78,7 @@ public class CuotaDAOJdbcImpl implements CuotaDAO {
                 cuotas.add(mapear(resultSet));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo listar cuotas", e);
+            throw new PersistenciaException("No se pudo listar cuotas", e);
         }
         return cuotas;
     }
@@ -94,7 +95,7 @@ public class CuotaDAOJdbcImpl implements CuotaDAO {
                 return Optional.of(mapear(resultSet));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo buscar la cuota", e);
+            throw new PersistenciaException("No se pudo buscar la cuota", e);
         }
     }
 
@@ -116,7 +117,7 @@ public class CuotaDAOJdbcImpl implements CuotaDAO {
             cuota.setId(id);
             return Optional.of(cuota);
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo actualizar la cuota", e);
+            throw new PersistenciaException("No se pudo actualizar la cuota", e);
         }
     }
 

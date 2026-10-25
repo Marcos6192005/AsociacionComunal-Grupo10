@@ -6,6 +6,7 @@ import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.models.entities
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Repository;
 
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.PersistenciaException;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -52,7 +53,7 @@ public class ProyectoDAOJdbcImpl implements ProyectoDAO {
             statement.setString(5, proyecto.getFechaInicio());
             statement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo guardar el proyecto", e);
+            throw new PersistenciaException("No se pudo guardar el proyecto", e);
         }
         return proyecto;
     }
@@ -67,7 +68,7 @@ public class ProyectoDAOJdbcImpl implements ProyectoDAO {
                 proyectos.add(mapear(resultSet));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo listar proyectos", e);
+            throw new PersistenciaException("No se pudo listar proyectos", e);
         }
         return proyectos;
     }
@@ -84,7 +85,7 @@ public class ProyectoDAOJdbcImpl implements ProyectoDAO {
                 return Optional.of(mapear(resultSet));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo buscar el proyecto por id", e);
+            throw new PersistenciaException("No se pudo buscar el proyecto por id", e);
         }
     }
 
@@ -103,7 +104,7 @@ public class ProyectoDAOJdbcImpl implements ProyectoDAO {
                 return Optional.of(proyecto);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo actualizar el proyecto", e);
+            throw new PersistenciaException("No se pudo actualizar el proyecto", e);
         }
         return Optional.empty();
     }
@@ -115,7 +116,7 @@ public class ProyectoDAOJdbcImpl implements ProyectoDAO {
             statement.setString(1, id);
             return statement.executeUpdate() == 1;
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo eliminar el proyecto", e);
+            throw new PersistenciaException("No se pudo eliminar el proyecto", e);
         }
     }
 

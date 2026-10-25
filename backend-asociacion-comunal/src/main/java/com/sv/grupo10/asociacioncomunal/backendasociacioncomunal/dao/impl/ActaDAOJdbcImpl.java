@@ -9,6 +9,7 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.PersistenciaException;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -72,7 +73,7 @@ public class ActaDAOJdbcImpl implements ActaDAO {
                 connection.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo guardar el acta", e);
+            throw new PersistenciaException("No se pudo guardar el acta", e);
         }
         return acta;
     }
@@ -87,7 +88,7 @@ public class ActaDAOJdbcImpl implements ActaDAO {
                 actas.add(mapearActa(resultSet));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo listar actas", e);
+            throw new PersistenciaException("No se pudo listar actas", e);
         }
         adjuntarAcuerdos(actas);
         return actas;
@@ -107,7 +108,7 @@ public class ActaDAOJdbcImpl implements ActaDAO {
                 return Optional.of(acta);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo buscar el acta", e);
+            throw new PersistenciaException("No se pudo buscar el acta", e);
         }
     }
 
@@ -142,7 +143,7 @@ public class ActaDAOJdbcImpl implements ActaDAO {
                 connection.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudo actualizar el acta", e);
+            throw new PersistenciaException("No se pudo actualizar el acta", e);
         }
         acta.setId(id);
         return Optional.of(acta);
@@ -188,7 +189,7 @@ public class ActaDAOJdbcImpl implements ActaDAO {
                 porActa.computeIfAbsent(actaId, id -> new ArrayList<>()).add(mapearAcuerdo(resultSet));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudieron listar los acuerdos", e);
+            throw new PersistenciaException("No se pudieron listar los acuerdos", e);
         }
         for (Acta acta : actas) {
             acta.setAcuerdos(porActa.getOrDefault(acta.getId(), new ArrayList<>()));
@@ -206,7 +207,7 @@ public class ActaDAOJdbcImpl implements ActaDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("No se pudieron leer los acuerdos del acta", e);
+            throw new PersistenciaException("No se pudieron leer los acuerdos del acta", e);
         }
         return acuerdos;
     }

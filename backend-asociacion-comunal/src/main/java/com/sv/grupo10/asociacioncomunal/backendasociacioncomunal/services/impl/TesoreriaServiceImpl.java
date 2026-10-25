@@ -1,4 +1,7 @@
 package com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.services.impl;
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.AccesoDenegadoException;
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.RecursoNoEncontradoException;
+import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.exceptions.ReglaNegocioException;
 
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.interfaces.CuotaDAO;
 import com.sv.grupo10.asociacioncomunal.backendasociacioncomunal.dao.interfaces.MovimientoDAO;
@@ -20,7 +23,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 @Service
@@ -65,20 +67,20 @@ public class TesoreriaServiceImpl implements TesoreriaService {
         MiembroDirectiva admin = exigirEscrituraTesoreria(correoAdmin);
 
         if (request.tipo() == null || request.tipo().isBlank()) {
-            throw new IllegalArgumentException("El tipo es obligatorio (INGRESO o EGRESO)");
+            throw new ReglaNegocioException("El tipo es obligatorio (INGRESO o EGRESO)");
         }
 
         String tipo = request.tipo().trim().toUpperCase();
         if (!TIPOS_MOVIMIENTO.contains(tipo)) {
-            throw new IllegalArgumentException("El tipo debe ser INGRESO o EGRESO");
+            throw new ReglaNegocioException("El tipo debe ser INGRESO o EGRESO");
         }
 
         if (request.concepto() == null || request.concepto().isBlank()) {
-            throw new IllegalArgumentException("El concepto es obligatorio");
+            throw new ReglaNegocioException("El concepto es obligatorio");
         }
 
         if (request.monto() == null || request.monto() <= 0) {
-            throw new IllegalArgumentException("El monto debe ser mayor a cero");
+            throw new ReglaNegocioException("El monto debe ser mayor a cero");
         }
 
         String fecha = request.fecha() != null && !request.fecha().isBlank()
@@ -135,20 +137,20 @@ public class TesoreriaServiceImpl implements TesoreriaService {
         exigirEscrituraTesoreria(correoAdmin);
 
         if (request.correoVecino() == null || request.correoVecino().isBlank()) {
-            throw new IllegalArgumentException("El correo del vecino es obligatorio");
+            throw new ReglaNegocioException("El correo del vecino es obligatorio");
         }
         if (request.periodo() == null || request.periodo().isBlank()) {
-            throw new IllegalArgumentException("El periodo es obligatorio (YYYY-MM)");
+            throw new ReglaNegocioException("El periodo es obligatorio (YYYY-MM)");
         }
         if (request.monto() == null || request.monto() <= 0) {
-            throw new IllegalArgumentException("El monto debe ser mayor a cero");
+            throw new ReglaNegocioException("El monto debe ser mayor a cero");
         }
 
         Usuario usuario = usuarioService.buscarPorCorreo(request.correoVecino().trim())
-                .orElseThrow(() -> new NoSuchElementException("No existe el vecino"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("No existe el vecino"));
 
         if (!(usuario instanceof Vecino vecino)) {
-            throw new IllegalArgumentException("Solo se pueden asignar cuotas a vecinos");
+            throw new ReglaNegocioException("Solo se pueden asignar cuotas a vecinos");
         }
 
         String periodo = request.periodo().trim();
@@ -158,7 +160,7 @@ public class TesoreriaServiceImpl implements TesoreriaService {
                                 && cuota.getPeriodo().equalsIgnoreCase(periodo));
 
         if (duplicada) {
-            throw new IllegalArgumentException("Ya existe una cuota para ese vecino en el periodo");
+            throw new ReglaNegocioException("Ya existe una cuota para ese vecino en el periodo");
         }
 
         Cuota cuota = new Cuota(
@@ -185,10 +187,10 @@ public class TesoreriaServiceImpl implements TesoreriaService {
         MiembroDirectiva admin = exigirEscrituraTesoreria(correoAdmin);
 
         Cuota cuota = cuotaDAO.buscarPorId(cuotaId)
-                .orElseThrow(() -> new NoSuchElementException("No existe la cuota"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("No existe la cuota"));
 
         if (PAGADA.equals(cuota.getEstado())) {
-            throw new IllegalArgumentException("La cuota ya esta pagada");
+            throw new ReglaNegocioException("La cuota ya esta pagada");
         }
 
         String fechaPago = LocalDate.now().toString();
@@ -196,7 +198,7 @@ public class TesoreriaServiceImpl implements TesoreriaService {
         cuota.setFechaPago(fechaPago);
 
         Cuota actualizada = cuotaDAO.actualizar(cuotaId, cuota)
-                .orElseThrow(() -> new NoSuchElementException("No se pudo actualizar la cuota"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("No se pudo actualizar la cuota"));
 
         Movimiento ingreso = new Movimiento(
                 INGRESO,
@@ -225,7 +227,7 @@ public class TesoreriaServiceImpl implements TesoreriaService {
         String cargo = Roles.normalizar(miembro.getCargo());
 
         if (!CARGOS_ESCRITURA.contains(cargo)) {
-            throw new SecurityException("Solo Presidente o Tesorero pueden escribir en tesoreria");
+            throw new AccesoDenegadoException("Solo Presidente o Tesorero pueden escribir en tesoreria");
         }
 
         return miembro;
@@ -233,10 +235,10 @@ public class TesoreriaServiceImpl implements TesoreriaService {
 
     private MiembroDirectiva exigirMiembroDirectiva(String correoAdmin) {
         Usuario usuario = usuarioService.buscarPorCorreo(correoAdmin)
-                .orElseThrow(() -> new SecurityException("Usuario no autenticado"));
+                .orElseThrow(() -> new AccesoDenegadoException("Usuario no autenticado"));
 
         if (!(usuario instanceof MiembroDirectiva miembro)) {
-            throw new SecurityException("Se requiere un miembro de la directiva");
+            throw new AccesoDenegadoException("Se requiere un miembro de la directiva");
         }
 
         return miembro;
